@@ -21,7 +21,7 @@
 </head>
 
 <body>
-  <textarea id="text" style="width:100%; height:100px;">
+  <textarea id="text" style="width:100%; height:200px;">
 </textarea>
   <button id="button">转</button>
   <table class="layui-hide" id="demo"></table>
@@ -31,28 +31,43 @@
   <!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
   <script>
 
-    $("#button").click(consoleFunction);
-    // $("#text").keydown(consoleFunction);
+    $("#button").click(transTable($("#text").val()));
 
-    $(document).keyup(function(event){
-      console.log(event.keyCode)
+    // 判断是否有键盘事件，监听v字母
+    $(document).keyup(function (event) {
       if (event.keyCode == 86) {
-        consoleFunction();
+        transTable($("#text").val());
       }
     });
 
-    function consoleFunction() {
-      transTable($("#text").val());
-    }
+    function transTable(array) {
+      // 数组为空，则不做操作
+      if (array == "") {
+        return;
+      }
 
-    function transTable(value) {
+      // 调用layui表格渲染工具
       layui.use('table', function () {
-        console.log(value)
         var table = layui.table;
         var width = 150;
-        
-        var array = value;
+
         var json = JSON.parse(array);
+
+        // 删除不必要的数据
+        $.each(json, function (_key) {
+          var key = _key;
+          var value = json[_key];
+
+          for (var k in value) {
+            // 设置你不要的值
+            if (k == "pageIndex" || k == "pageSize" || k == "isDelete"
+              || k == "createUserId" || k == "createTime" || k == "updateUserId"
+              || k == "creStartTime" || k == "creEndTime" || k == "updateTime") {
+              //删除
+              delete value[k];
+            }
+          }
+        });
 
         var titleJson = [];
         var childJson = [];
@@ -64,15 +79,6 @@
         }
         titleJson[0] = childJson;
         console.log(titleJson);
-        console.log([[ //标题栏
-          { field: 'id', title: 'ID', width: 80, sort: true }
-          , { field: 'username', title: '用户名', width: 120 }
-          , { field: 'email', title: '邮箱', minWidth: 150 }
-          , { field: 'sign', title: '签名', minWidth: 160 }
-          , { field: 'sex', title: '性别', width: 80 }
-          , { field: 'city', title: '城市', width: 100 }
-          , { field: 'experience', title: '积分', width: 80, sort: true }
-        ]]);
 
         //展示已知数据
         table.render({
@@ -84,7 +90,7 @@
           , even: true
           //,page: true //是否显示分页
           //,limits: [5, 7, 10]
-          //,limit: 5 //每页默认显示的数量
+          ,limit: 20 //每页默认显示的数量
         });
       });
     }
